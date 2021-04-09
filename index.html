@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Monitor - AOG Tally Counter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-database.js"></script>
+
+  </head>
+  <body style="background:#000">
+    <div class="container-fluid">
+
+      <div class="position-relative">
+        <div class="d-flex justify-content-center" style="margin-top:10%">
+          <h4 style="color:#fffb00">Tally Counter</h4>
+        </div>
+
+        <div class="d-flex justify-content-center">
+          <h1 id="counter" style="font-size:100px;color:#fffb00">0</h1>
+        </div>
+
+        <hr><hr>
+        <div class="d-flex justify-content-center">
+          <h4 style="color:#fffb00">Chair Total</h4>&nbsp
+          <button class="btn btn-dark btn-sm btn-edit">Edit Chair</button>
+        </div>
+
+        <div class="d-flex justify-content-center">
+          <h1 id="chair_total" style="font-size:100px;color:#fffb00">0</h1>
+        </div>
+
+        <hr><hr>
+        <div class="d-flex justify-content-center">
+          <h4 style="color:#fffb00">Percentage</h4>
+        </div>
+
+        <div class="d-flex justify-content-center">
+          <h1 id="percentage" style="font-size:70px;color:#fffb00">0%</h1>
+        </div>
+
+      </div>
+    </div>
+
+  </body>
+  <!-- Bootstrap core JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+
+  <script type="text/javascript">
+
+    $(document).ready(async function() {
+
+      var firebaseConfig = {
+        apiKey: "AIzaSyDEQPKiKXF2HK5t-RS9ZGrbl92MKBcTPpg",
+        authDomain: "dm-aog-tc.firebaseapp.com",
+        projectId: "dm-aog-tc",
+        storageBucket: "dm-aog-tc.appspot.com",
+        messagingSenderId: "270640772588",
+        appId: "1:270640772588:web:4efad4e517ee4a5b72bcc9"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      let database = firebase.database().ref('aog');
+
+      //get data
+      database.on('value', (snapshot) => {
+        const data = snapshot.val();
+        $('#counter').html(data.tally_counter);
+        $('#chair_total').html(data.chair_total);
+        let percentage = (data.tally_counter/data.chair_total)*100;
+        $('#percentage').html(percentage.toFixed(2)+'%');
+      });
+
+      let actual_passcode;
+      await database.get().then(function(snapshot) {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            actual_passcode = data.passcode;
+          }
+          else {
+            console.log("No data available");
+          }
+      }).catch(function(error) {
+        console.error(error);
+      });
+
+      $('.btn-edit').click(function(){
+        let passcode = prompt("Masukan Passcode","");
+        if(passcode != actual_passcode) {
+          alert("passcode salah!");
+        }
+        else{
+          let chair_total;
+          do{
+            chair_total = prompt("masukan total kursi baru","");
+          }while(isNaN(chair_total));
+
+          firebase.database().ref('aog').update({
+            chair_total: chair_total
+          });
+        }
+      });
+
+    });
+
+  </script>
+
+
+</html>
